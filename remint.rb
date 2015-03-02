@@ -456,6 +456,88 @@ class Remint
   end
 end
 
+class CompareExcel
+  MAX_SHEET_NAME_LEN = 31 # Excel のシート名の最大文字数
+  OUTPUT_SHEET_NAME = "comparison"
+
+  def initialize
+    @excel = WIN32OLE.new('Excel.Application')
+    WIN32OLE.const_load(@excel, Excel)
+    @excel.Visible = true
+    @excel.SheetsInNewWorkbook = 1
+    @input_books = []
+    @output_book = nil
+    @output_book_name = ""
+  end
+
+  def input_books(books)
+    @input_books = books
+  end
+
+  def open_input_book(xlsx_filename)
+    abs_filename = get_abs_path(xlsx_filename)
+    book = @excel.Workbooks.Open(abs_filename)
+    return book
+  end
+
+  def open_output_book(xlsx_filename)
+    @output_book = @excel.Workbooks.Add
+    @output_book_name = get_abs_path(xlsx_filename)
+    @output_sheet = @output_book.Sheets.Add
+    @output_sheet.Name = OUTPUT_SHEET_NAME
+  end
+
+  def copy_charts(sheet_names)
+    col = 2
+    @input_books.each do |ib|
+      input_book = open_input_book(ib)
+
+      row = 2
+      sheet_names.each do |sn|
+        input_book.Activate
+
+        sheet_exist = false
+        input_book.Sheets.each { |sheet| sheet_exist = true if sheet.Name == "#{sn} Graph"[0, MAX_SHEET_NAME_LEN] }
+        if sheet_exist
+          input_book.Sheets("#{sn} Graph"[0, MAX_SHEET_NAME_LEN]).Select
+          @excel.ActiveChart.ChartArea.Copy
+
+          @output_book.Activate
+          @output_book.Sheets(OUTPUT_SHEET_NAME).Select
+          @output_book.ActiveSheet.Cells(row, col).Select
+          @output_book.ActiveSheet.Paste
+        end
+
+        row += 25
+      end
+
+      input_book.Close(0)
+      col += 10
+    end
+
+    @output_book.Activate
+    @output_book.ActiveSheet.Cells(1, 1).Select
+
+    @output_book.ActiveSheet.ChartObjects.each do |co|
+      co.Height = 288
+      co.Width = 512
+    end
+  end
+
+  def close
+    @output_book.SaveAs(@output_book_name)
+    @output_book.Close(0)
+
+    @excel.Quit
+  end
+
+  private
+  def get_abs_path(filename)
+    fso = WIN32OLE.new('Scripting.FileSystemObject')
+    return fso.GetAbsolutePathName(filename)
+  end
+end
+
 class Option
   # 開始時刻
   attr_accessor :begin_time
@@ -475,6 +557,8 @@ class Option
   # 出力フォーマット
   attr_accessor :format
 
+  attr_accessor :comparison
+
   def initialize
     @format = "xls"
   end
@@ -486,6 +570,7 @@ begin
   op.banner = "Usage: #{File.basename($0)} [options] <file>...\n\n" +
               "Example: ruby #{File.basename($0)} -o output ./coin_log_2009-03-20T*/dbstat/dbstat*\n" +
               "         ruby #{File.basename($0)} -o output -b \"2009-03-20 15:30\" -e \"2009-03-20 16:30\" -c SGASTAT,SYSSTAT ./dbstat*\n" +
+              "         ruby #{File.basename($0)} --compare -o comp.xlsx ./output1.xlsx ./output2.xlsx\n" +
               "\n" +
               "Option: "
 
@@ -507,6 +592,9 @@ begin
   op.on('-T', '--format=FORMAT_NAME', String, 'specify output file format (xls, csv)') do |arg|
     opt.format = arg
   end
+  op.on('-C', '--compare', 'compare output .xlsx files') do |bool|
+    opt.comparison = bool
+  end
   op.on('-h', '--help', 'output help') do
     puts op.help
     exit
@@ -515,7 +603,7 @@ begin
   op.parse!
   raise "Missing input file." if ARGV.size == 0
   raise "Missing output file prefix." if opt.output.nil?
-
+  raise "Extension of output file name must be \"xlsx\"." if opt.comparison && opt.output !~ /\.xlsx/
 rescue
   puts $! if $!.to_s != ""
   #RDoc::usage('Usage', 'Example')
@@ -525,6 +613,19 @@ end
 
 
 # main
+if opt.comparison
+  comp = CompareExcel.new
+  comp.open_output_book(opt.output)
+  comp.input_books(ARGV)
+  if opt.categories
+    comp.copy_charts(opt.categories)
+  else
+    comp.copy_charts(["MPSTAT", "MEMINFO", "IOSTAT", "NETSTAT", "SYSSTAT", "SYSTEM_EVENT", "MEMORY_DYNAMIC_COMPONENTS", "SGASTAT", "KSMSS"])
+  end
+  comp.close
+  exit
+end
+
 config_io = opt.config_file ? File.open(opt.config_file) : DATA
 config = YAML.load(config_io.read)
 
