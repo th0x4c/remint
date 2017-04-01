@@ -749,8 +749,7 @@ __END__
     RowField: CTIMESTAMP
     ColumnField: STAT_NAME
     DataField: diff_VALUE
-    # PageField: CUMULATIV # <= 11.2.0.2
-    PageField: CUM
+    PageField: CUMULATIV
     CurrentPage: "YES"
     ChartType: Excel::XlAreaStacked100
     invisible:
