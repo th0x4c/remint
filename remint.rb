@@ -820,7 +820,7 @@ __END__
     #   - '%soft'
     #   - '%steal'
     #   - '%idle'
-    DataField:      # RHEL 6
+    DataField:      # RHEL 6 (sysstat version 9)
       - '%usr'
       - '%nice'
       - '%sys'
@@ -830,6 +830,17 @@ __END__
       - '%steal'
       - '%guest'
       - '%idle'
+    # DataField:    # RHEL 7 (sysstat version 10)
+    #   - '%usr'
+    #   - '%nice'
+    #   - '%sys'
+    #   - '%iowait'
+    #   - '%irq'
+    #   - '%soft'
+    #   - '%steal'
+    #   - '%guest'
+    #   - '%gnice'
+    #   - '%idle'
     PageField: CNAME
     CurrentPage: MPSTAT
     ChartType: Excel::XlAreaStacked
