@@ -907,3 +907,31 @@ __END__
     PageField: CNAME
     CurrentPage: NETSTAT
     ChartType: Excel::XlAreaStacked
+
+- name: IPROUTE
+  diff:
+    id:
+      - Iface
+    value:
+      - RX bytes
+      - RX packets
+      - RX errors
+      - RX dropped
+      - RX overrun
+      - RX mcast
+      - TX bytes
+      - TX packets
+      - TX errors
+      - TX dropped
+      - TX carrier
+      - TX collsns
+  pivot:
+    RowField: CTIMESTAMP
+    ColumnField:
+      - Iface
+    DataField:
+      - diff_RX bytes
+      - diff_TX bytes
+    PageField: CNAME
+    CurrentPage: IPROUTE
+    ChartType: Excel::XlAreaStacked

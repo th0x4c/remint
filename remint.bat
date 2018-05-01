@@ -45,13 +45,13 @@ for %%d in (!args!) do (
     echo %%i
 
     pushd %%i
-    ruby %REMINT_HOME%\remint.rb !remint_opts! -o coin_stat -c MPSTAT,MEMINFO,IOSTAT,NETSTAT,MEMORY_DYNAMIC_COMPONENTS,SYSTEM_EVENT,OSSTAT,SGASTAT,SYSSTAT,KSMSS %%i\osstat\osstat* %%i\dbstat\dbstat*
+    ruby %REMINT_HOME%\remint.rb !remint_opts! -o coin_stat -c MPSTAT,MEMINFO,IOSTAT,IPROUTE,NETSTAT,MEMORY_DYNAMIC_COMPONENTS,SYSTEM_EVENT,OSSTAT,SGASTAT,SYSSTAT,KSMSS %%i\osstat\osstat* %%i\dbstat\dbstat*
 
     set remint_outputs=!remint_outputs! %%i\coin_stat.xlsx
     popd
   )
 
-  ruby %REMINT_HOME%remint.rb --compare -o %%~nd.xlsx -c MPSTAT,MEMINFO,IOSTAT,NETSTAT,MEMORY_DYNAMIC_COMPONENTS,SYSTEM_EVENT,OSSTAT,SGASTAT,SYSSTAT,KSMSS !remint_outputs!
+  ruby %REMINT_HOME%remint.rb --compare -o %%~nd.xlsx -c MPSTAT,MEMINFO,IOSTAT,IPROUTE,NETSTAT,MEMORY_DYNAMIC_COMPONENTS,SYSTEM_EVENT,OSSTAT,SGASTAT,SYSSTAT,KSMSS !remint_outputs!
   popd
 )
 
