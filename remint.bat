@@ -45,7 +45,16 @@ for %%d in (!args!) do (
     echo %%i
 
     pushd %%i
-    ruby %REMINT_HOME%\remint.rb !remint_opts! -o coin_stat -c MPSTAT,MEMINFO,IOSTAT,IPROUTE,NETSTAT,MEMORY_DYNAMIC_COMPONENTS,SYSTEM_EVENT,OSSTAT,SGASTAT,SYSSTAT,KSMSS %%i\osstat\osstat* %%i\dbstat\dbstat*
+
+    set coin_logs=
+    if exist %%i\osstat\ (
+      set coin_logs=!coin_logs! %%i\osstat\osstat*
+    )
+    if exist %%i\dbstat\ (
+      set coin_logs=!coin_logs! %%i\dbstat\dbstat*
+    )
+
+    ruby %REMINT_HOME%\remint.rb !remint_opts! -o coin_stat -c MPSTAT,MEMINFO,IOSTAT,IPROUTE,NETSTAT,MEMORY_DYNAMIC_COMPONENTS,SYSTEM_EVENT,OSSTAT,SGASTAT,SYSSTAT,KSMSS !coin_logs!
 
     set remint_outputs=!remint_outputs! %%i\coin_stat.xlsx
     popd
