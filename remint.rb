@@ -96,6 +96,7 @@ if IS_WINDOWS = RUBY_PLATFORM.downcase =~ /mswin(?!ce)|mingw|cygwin|bccwin/
   require 'win32ole'
   module Excel
   end
+  Encoding.default_external = Encoding::UTF_8
 else
 end
 
